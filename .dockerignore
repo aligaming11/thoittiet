@@ -1,12 +1,10 @@
 # Node modules
 node_modules/
 npm-debug.log
-yarn-error.log
 
-# Environment variables
-.env
-.env.local
-.env.*.local
+# Git
+.git/
+.gitignore
 
 # IDE
 .vscode/
@@ -14,20 +12,22 @@ yarn-error.log
 *.swp
 *.swo
 *~
-.DS_Store
 
 # OS
+.DS_Store
 Thumbs.db
 desktop.ini
 
-# Build outputs
-dist/
-build/
+# Documentation
+README.md
+*.md
 
-# Logs
-*.log
-logs/
+# Unused folders
+src/
+public/
+assets/
 
 # Temporary files
 *.tmp
-.cache/
+*.log
+
