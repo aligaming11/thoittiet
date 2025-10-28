@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliWeather - Thời Tiết Thông Minh</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </head>
+  <body>
+    <!-- Weather Effects Background -->
+    <div id="weatherEffects" class="weather-effects">
+        <canvas id="weatherCanvas"></canvas>
+    </div>
+    
+    <!-- Floating Alert Badge (Persistent Warning Icon) -->
+    <div id="floatingAlertBadge" class="floating-alert-badge hidden">
+        <div class="badge-pulse"></div>
+        <i class="fas fa-triangle-exclamation"></i>
+        <div class="badge-count" id="badgeCount">1</div>
+    </div>
+
+    <!-- Flood Alert Banner (Compact) -->
+    <div id="floodAlertBanner" class="flood-alert-banner hidden">
+        <div class="alert-icon-container">
+            <div class="alert-icon-pulse"></div>
+            <i class="fas fa-triangle-exclamation alert-icon"></i>
+        </div>
+        <div class="alert-content">
+            <div class="alert-title" id="alertTitle">Cảnh Báo Thiên Tai</div>
+            <div class="alert-message" id="alertMessage">Đang có nguy cơ thời tiết nguy hiểm</div>
+        </div>
+        <div class="alert-actions">
+            <button id="viewAlertDetails" class="view-details-btn">
+                <i class="fas fa-info-circle"></i>
+                Chi tiết
+            </button>
+            <button id="closeAlert" class="close-banner-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Flood Alert Modal (Details) -->
+    <div id="floodAlertModal" class="flood-alert-modal hidden">
+        <div class="flood-alert-overlay"></div>
+        <div class="flood-alert-content">
+            <div class="flood-alert-header">
+                <i class="fas fa-triangle-exclamation"></i>
+                <h2>Chi Tiết Cảnh Báo</h2>
+                <button id="closeFloodModal" class="close-alert-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flood-alert-body">
+                <div id="floodAlertMessage"></div>
+                <div class="flood-alert-tips">
+                    <h3><i class="fas fa-lightbulb"></i> Khuyến Nghị An Toàn:</h3>
+                    <ul id="safetyTips">
+                        <li>Theo dõi tin tức thời tiết thường xuyên</li>
+                        <li>Chuẩn bị đồ dùng cần thiết và di chuyển đến nơi an toàn</li>
+                        <li>Không đi qua vùng ngập nước sâu</li>
+                        <li>Liên hệ cơ quan chức năng khi cần hỗ trợ: 113</li>
+                    </ul>
+                </div>
+                <div class="flood-alert-source">
+                    <p><i class="fas fa-info-circle"></i> Nguồn: WeatherAPI.com & Hệ thống dự báo thời tiết</p>
+                </div>
+            </div>
+            <div class="flood-alert-footer">
+                <button id="confirmFloodAlert" class="confirm-alert-btn">
+                    Đã hiểu
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <i class="fas fa-cloud-sun"></i>
+                    AliWeather
+                </h1>
+                <div class="header-controls">
+                    <button id="refreshBtn" class="refresh-btn" title="Làm mới dữ liệu">
+                        <i class="fas fa-rotate"></i>
+                        <span>Làm mới</span>
+                    </button>
+                    <button id="themeToggle" class="theme-toggle" title="Chuyển chế độ">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="last-update">
+                        Cập nhật lúc: <span id="lastUpdate">--:--</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="locationSearch" placeholder="Tìm kiếm thành phố..." autocomplete="off">
+                    <button id="currentLocationBtn" class="location-btn" title="Dùng vị trí hiện tại">
+                        <i class="fas fa-location-crosshairs"></i>
+                    </button>
+                </div>
+                <div id="searchResults" class="search-results hidden"></div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state">
+                <div class="spinner"></div>
+                <p>Đang tải dữ liệu thời tiết...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="error-state hidden">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p id="errorMessage">Có lỗi xảy ra</p>
+                <button id="retryBtn" class="retry-btn">Thử lại</button>
+            </div>
+
+            <!-- Weather Content -->
+            <div id="weatherContent" class="weather-content hidden">
+                <!-- Weather Alerts -->
+                <div id="alertsSection" class="alerts-section hidden">
+                    <div class="alert-banner">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <div id="alertsContent"></div>
+                    </div>
+                </div>
+
+                <!-- Current Weather -->
+                <section class="current-weather">
+                    <div class="location-info">
+                        <h2 id="locationName">--</h2>
+                        <p id="locationCountry">--</p>
+                        <p id="currentDateTime">--</p>
+                    </div>
+
+                    <div class="current-main">
+                        <div class="temperature-display">
+                            <div class="temp-icon">
+                                <img id="currentWeatherIcon" src="" alt="Weather icon">
+                            </div>
+                            <div class="temp-value">
+                                <span id="currentTemp">--</span>
+                                <span class="temp-unit">°C</span>
+                            </div>
+                        </div>
+                        <div class="weather-description">
+                            <p id="weatherCondition">--</p>
+                            <p class="feels-like">Cảm giác như <span id="feelsLike">--</span>°C</p>
+                        </div>
+                    </div>
+
+                    <div class="current-details">
+                        <div class="detail-item">
+                            <i class="fas fa-droplet"></i>
+                            <div>
+                                <span class="detail-label">Độ ẩm</span>
+                                <span class="detail-value" id="humidity">--%</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-wind"></i>
+                            <div>
+                                <span class="detail-label">Gió</span>
+                                <span class="detail-value" id="windSpeed">-- km/h</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-gauge"></i>
+                            <div>
+                                <span class="detail-label">Áp suất</span>
+                                <span class="detail-value" id="pressure">-- mb</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-eye"></i>
+                            <div>
+                                <span class="detail-label">Tầm nhìn</span>
+                                <span class="detail-value" id="visibility">-- km</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-sun"></i>
+                            <div>
+                                <span class="detail-label">Chỉ số UV</span>
+                                <span class="detail-value" id="uvIndex">--</span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-cloud"></i>
+                            <div>
+                                <span class="detail-label">Mây</span>
+                                <span class="detail-value" id="clouds">--%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sun-times">
+                        <div class="sun-item">
+                            <i class="fas fa-sunrise"></i>
+                            <span>Bình minh: <span id="sunrise">--:--</span></span>
+                        </div>
+                        <div class="sun-item">
+                            <i class="fas fa-sunset"></i>
+                            <span>Hoàng hôn: <span id="sunset">--:--</span></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Air Quality -->
+                <section class="air-quality-section">
+                    <h3><i class="fas fa-lungs"></i> Chất Lượng Không Khí</h3>
+                    <div id="airQualityContent">
+                        <div class="aqi-main">
+                            <div class="aqi-value" id="aqiValue">--</div>
+                            <div class="aqi-label" id="aqiLabel">--</div>
+                        </div>
+                        <div class="pollutants-grid">
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">PM2.5</span>
+                                <span class="pollutant-value" id="pm25">--</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">PM10</span>
+                                <span class="pollutant-value" id="pm10">--</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">CO</span>
+                                <span class="pollutant-value" id="co">--</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">NO₂</span>
+                                <span class="pollutant-value" id="no2">--</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">O₃</span>
+                                <span class="pollutant-value" id="o3">--</span>
+                            </div>
+                            <div class="pollutant-item">
+                                <span class="pollutant-name">SO₂</span>
+                                <span class="pollutant-value" id="so2">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Hourly Forecast -->
+                <section class="hourly-forecast">
+                    <h3><i class="fas fa-clock"></i> Dự Báo Theo Giờ</h3>
+                    <div class="hourly-chart-container">
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
+                    <div class="hourly-scroll" id="hourlyScroll">
+                        <!-- Hourly items will be inserted here -->
+                    </div>
+                </section>
+
+                <!-- 7-Day Forecast -->
+                <section class="daily-forecast">
+                    <h3><i class="fas fa-calendar-days"></i> Dự Báo 7 Ngày</h3>
+                    <div class="forecast-grid" id="forecastGrid">
+                        <!-- Daily forecast cards will be inserted here -->
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Dữ liệu từ <a href="https://www.weatherapi.com/" target="_blank">WeatherAPI.com</a></p>
+            <p class="footer-note">🌤️ Click nút "Làm mới" để cập nhật dữ liệu thời tiết</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/weather-effects.js"></script>
+    <script src="js/flood-alert.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
+
