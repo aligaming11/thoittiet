@@ -2,7 +2,7 @@
 
 A beautiful, full-featured weather dashboard built with vanilla HTML, CSS, and JavaScript. Get real-time weather updates, hourly and daily forecasts, air quality information, and more!
 
-![AliWeather](https://img.shields.io/badge/AliWeather-Thời_Tiết-blueviolet)
+![AliWeather](https://img.shields.io/badge/AliWeather-Smart%20Weather-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ Features
@@ -70,14 +70,14 @@ Install the "Live Server" extension and click "Go Live"
 
 ```bash
 # Build the image
-docker build -t aliweather .
+docker build -t weather-dashboard .
 
 # Run the container
 docker run -d \
-  --name aliweather \
+  --name weather-dashboard \
   -p 8080:80 \
   --restart unless-stopped \
-  aliweather
+  weather-dashboard
 ```
 
 Access at: http://localhost:8080
@@ -87,24 +87,24 @@ Access at: http://localhost:8080
 If you have the `deploy-github` tool installed:
 
 ```bash
-deploy-github https://github.com/YOUR_USERNAME/aliweather.git 8080
+deploy-github https://github.com/YOUR_USERNAME/weather-dashboard.git 8080
 ```
 
 Or manually:
 
 ```bash
 cd /mnt/user/appdata
-git clone https://github.com/YOUR_USERNAME/aliweather.git
-cd aliweather
+git clone https://github.com/YOUR_USERNAME/weather-dashboard.git
+cd weather-dashboard
 
 # Edit js/config.js with your API key
 
-docker build -t aliweather .
+docker build -t weather-dashboard .
 docker run -d \
-  --name aliweather \
+  --name weather-dashboard \
   -p 8080:80 \
   --restart unless-stopped \
-  aliweather
+  weather-dashboard
 ```
 
 ## 📱 Usage
@@ -164,7 +164,7 @@ const CONFIG = {
 ## 📁 Project Structure
 
 ```
-aliweather/
+weather-dashboard/
 ├── index.html              # Main HTML file
 ├── css/
 │   └── style.css          # All styles (responsive, themes)
@@ -172,9 +172,7 @@ aliweather/
 │   ├── config.js          # Configuration & API key
 │   ├── api.js             # Weather API wrapper
 │   ├── charts.js          # Chart.js utilities
-│   ├── app.js             # Main application logic
-│   ├── weather-effects.js # Dynamic weather effects
-│   └── flood-alert.js     # Flood alert system
+│   └── app.js             # Main application logic
 ├── assets/                # Optional assets folder
 ├── Dockerfile             # Docker configuration
 └── README.md              # This file
