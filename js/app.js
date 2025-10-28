@@ -156,7 +156,24 @@ class WeatherApp {
             this.displaySearchResults(results);
         } catch (error) {
             console.error('Search error:', error);
+            this.displaySearchError(error.message);
         }
+    }
+    
+    /**
+     * Display search error
+     */
+    displaySearchError(message) {
+        const container = document.getElementById('searchResults');
+        container.innerHTML = `
+            <div class="search-result-item" style="color: var(--error); text-align: center;">
+                <i class="fas fa-exclamation-circle"></i>
+                Lỗi tìm kiếm: ${message}
+                <br>
+                <small>Kiểm tra kết nối internet hoặc API key</small>
+            </div>
+        `;
+        container.classList.remove('hidden');
     }
 
     /**
@@ -166,7 +183,12 @@ class WeatherApp {
         const container = document.getElementById('searchResults');
         
         if (!results || results.length === 0) {
-            container.innerHTML = '<div class="search-result-item">No locations found</div>';
+            container.innerHTML = `
+                <div class="search-result-item" style="text-align: center; color: var(--text-secondary);">
+                    <i class="fas fa-search"></i>
+                    Không tìm thấy địa điểm nào
+                </div>
+            `;
             container.classList.remove('hidden');
             return;
         }
@@ -177,7 +199,8 @@ class WeatherApp {
                  data-lon="${location.lon}" 
                  data-name="${location.name}" 
                  data-country="${location.country}">
-                ${location.name}, ${location.region ? location.region + ', ' : ''}${location.country}
+                <i class="fas fa-map-marker-alt" style="color: var(--accent-primary); margin-right: 8px;"></i>
+                ${location.name}${location.region ? ', ' + location.region : ''}, ${location.country}
             </div>
         `).join('');
 

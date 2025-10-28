@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tìm Kiếm - AliWeather</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .info-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .info-value {
+            color: #333;
+            margin-left: 10px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Tìm Kiếm</h1>
+        <p class="subtitle">Kiểm tra chức năng tìm kiếm AliWeather</p>
+        
+        <div id="status" class="status loading" style="display: none;">
+            <span class="spinner"></span> Đang kiểm tra...
+        </div>
+        
+        <div class="info-box">
+            <h3>📊 Thông Tin API</h3>
+            <div class="info-item">
+                <span class="info-label">API Key:</span>
+                <span class="info-value" id="apiKey">Đang tải...</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Endpoint:</span>
+                <span class="info-value" id="endpoint">Đang tải...</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Trạng thái:</span>
+                <span class="info-value" id="apiStatus">Đang kiểm tra...</span>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔧 Test Tìm Kiếm</h3>
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Nhập tên thành phố (ví dụ: Hanoi, Ho Chi Minh, Da Nang)"
+                value="Hanoi"
+            >
+            <button onclick="testSearch()">🔍 Thử Tìm Kiếm</button>
+        </div>
+        
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        const API_KEY = '80a64dd9bada4e08b85152132252810';
+        const BASE_URL = 'https://api.weatherapi.com/v1';
+        
+        // Hiển thị thông tin API
+        document.getElementById('apiKey').textContent = API_KEY.substring(0, 20) + '...';
+        document.getElementById('endpoint').textContent = BASE_URL + '/search.json';
+        
+        // Test API khi load trang
+        window.onload = async function() {
+            await testAPIConnection();
+        };
+        
+        async function testAPIConnection() {
+            const statusEl = document.getElementById('apiStatus');
+            try {
+                const url = `${BASE_URL}/current.json?key=${API_KEY}&q=Hanoi`;
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    statusEl.textContent = '✅ Hoạt động tốt';
+                    statusEl.style.color = '#155724';
+                } else {
+                    const error = await response.json();
+                    statusEl.textContent = '❌ Lỗi: ' + (error.error?.message || response.status);
+                    statusEl.style.color = '#721c24';
+                }
+            } catch (error) {
+                statusEl.textContent = '❌ Không kết nối được: ' + error.message;
+                statusEl.style.color = '#721c24';
+            }
+        }
+        
+        async function testSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsEl = document.getElementById('results');
+            const statusEl = document.getElementById('status');
+            
+            if (!query) {
+                alert('Vui lòng nhập tên thành phố!');
+                return;
+            }
+            
+            // Show loading
+            statusEl.style.display = 'block';
+            statusEl.className = 'status loading';
+            statusEl.innerHTML = '<span class="spinner"></span> Đang tìm kiếm "' + query + '"...';
+            resultsEl.innerHTML = '';
+            
+            try {
+                const url = `${BASE_URL}/search.json?key=${API_KEY}&q=${encodeURIComponent(query)}`;
+                console.log('Request URL:', url);
+                
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || `HTTP ${response.status}`);
+                }
+                
+                const results = await response.json();
+                console.log('Results:', results);
+                
+                // Show success
+                statusEl.className = 'status success';
+                statusEl.textContent = `✅ Tìm thấy ${results.length} kết quả`;
+                
+                // Display results
+                if (results.length === 0) {
+                    resultsEl.innerHTML = '<p style="text-align: center; color: #666;">Không tìm thấy địa điểm nào</p>';
+                } else {
+                    resultsEl.innerHTML = '<h3 style="margin-bottom: 15px; color: #667eea;">📍 Kết Quả:</h3>' +
+                        results.map((loc, i) => `
+                            <div class="result-item">
+                                <strong>${i + 1}. ${loc.name}</strong>
+                                ${loc.region ? ', ' + loc.region : ''}, ${loc.country}
+                                <br>
+                                <small style="color: #666;">
+                                    📍 Lat: ${loc.lat}, Lon: ${loc.lon}
+                                </small>
+                            </div>
+                        `).join('');
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                
+                // Show error
+                statusEl.className = 'status error';
+                statusEl.innerHTML = `
+                    ❌ Lỗi: ${error.message}
+                    <br><small>Kiểm tra console để xem chi tiết</small>
+                `;
+                
+                resultsEl.innerHTML = `
+                    <div style="background: #fff3cd; padding: 20px; border-radius: 10px;">
+                        <h4 style="color: #856404; margin-bottom: 10px;">🛠️ Hướng Dẫn Khắc Phục:</h4>
+                        <ol style="color: #856404; padding-left: 20px;">
+                            <li>Kiểm tra kết nối internet</li>
+                            <li>API key có thể chưa được kích hoạt (chờ ~2 giờ)</li>
+                            <li>Kiểm tra Developer Console (F12) để xem lỗi chi tiết</li>
+                            <li>Thử API key khác từ <a href="https://www.weatherapi.com/" target="_blank">WeatherAPI.com</a></li>
+                        </ol>
+                    </div>
+                `;
+            }
+        }
+        
+        // Allow Enter key to search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                testSearch();
+            }
+        });
+    </script>
+</body>
+</html>
+
