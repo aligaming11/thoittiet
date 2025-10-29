@@ -17,6 +17,39 @@ class WeatherApp {
     }
 
     /**
+     * Translate country name to Vietnamese
+     */
+    translateCountry(countryName) {
+        const countryTranslations = {
+            'Vietnam': 'Việt Nam',
+            'United States': 'Hoa Kỳ',
+            'United States of America': 'Hoa Kỳ',
+            'USA': 'Hoa Kỳ',
+            'China': 'Trung Quốc',
+            'Japan': 'Nhật Bản',
+            'South Korea': 'Hàn Quốc',
+            'Thailand': 'Thái Lan',
+            'Singapore': 'Singapore',
+            'Malaysia': 'Malaysia',
+            'Indonesia': 'Indonesia',
+            'Philippines': 'Philippines',
+            'Cambodia': 'Campuchia',
+            'Laos': 'Lào',
+            'Myanmar': 'Myanmar',
+            'United Kingdom': 'Anh',
+            'France': 'Pháp',
+            'Germany': 'Đức',
+            'Italy': 'Ý',
+            'Spain': 'Tây Ban Nha',
+            'Australia': 'Úc',
+            'Canada': 'Canada',
+            'Russia': 'Nga',
+            'India': 'Ấn Độ'
+        };
+        return countryTranslations[countryName] || countryName;
+    }
+
+    /**
      * Initialize application
      */
     async init() {
@@ -124,7 +157,7 @@ class WeatherApp {
      */
     async getCurrentLocation() {
         if (!navigator.geolocation) {
-            this.showError('Geolocation is not supported by your browser');
+            this.showError('Trình duyệt của bạn không hỗ trợ xác định vị trí');
             return;
         }
 
@@ -135,7 +168,7 @@ class WeatherApp {
                 this.currentLocation = {
                     lat: position.coords.latitude,
                     lon: position.coords.longitude,
-                    name: 'Current Location'
+                    name: 'Vị trí hiện tại'
                 };
                 await this.loadWeatherData();
             },
@@ -165,10 +198,25 @@ class WeatherApp {
      */
     displaySearchError(message) {
         const container = document.getElementById('searchResults');
+        // Translate common error messages
+        let translatedMessage = message;
+        const errorTranslations = {
+            'API request failed': 'Yêu cầu API thất bại',
+            'Network error': 'Lỗi kết nối mạng',
+            'Invalid API key': 'API key không hợp lệ',
+            'Rate limit exceeded': 'Đã vượt quá giới hạn yêu cầu',
+            'Location not found': 'Không tìm thấy địa điểm'
+        };
+        for (const [en, vi] of Object.entries(errorTranslations)) {
+            if (message.toLowerCase().includes(en.toLowerCase())) {
+                translatedMessage = vi;
+                break;
+            }
+        }
         container.innerHTML = `
             <div class="search-result-item" style="color: var(--error); text-align: center;">
                 <i class="fas fa-exclamation-circle"></i>
-                Lỗi tìm kiếm: ${message}
+                Lỗi tìm kiếm: ${translatedMessage}
                 <br>
                 <small>Kiểm tra kết nối internet hoặc API key</small>
             </div>
@@ -255,7 +303,7 @@ class WeatherApp {
                 });
             }
         } catch (error) {
-            this.showError('Failed to load default location');
+            this.showError('Không thể tải vị trí mặc định');
         }
     }
 
@@ -294,7 +342,7 @@ class WeatherApp {
             
         } catch (error) {
             console.error('Error loading weather data:', error);
-            this.showError(error.message || 'Failed to load weather data. Please check your API key.');
+            this.showError(error.message || 'Không thể tải dữ liệu thời tiết. Vui lòng kiểm tra API key của bạn.');
         }
     }
 
@@ -307,10 +355,11 @@ class WeatherApp {
         
         // Location info
         document.getElementById('locationName').textContent = location.name;
-        document.getElementById('locationCountry').textContent = `${location.region ? location.region + ', ' : ''}${location.country}`;
+        const countryTranslated = this.translateCountry(location.country);
+        document.getElementById('locationCountry').textContent = `${location.region ? location.region + ', ' : ''}${countryTranslated}`;
         
         const localTime = new Date(location.localtime);
-        document.getElementById('currentDateTime').textContent = localTime.toLocaleDateString('en-US', {
+        document.getElementById('currentDateTime').textContent = localTime.toLocaleDateString('vi-VN', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -472,7 +521,7 @@ class WeatherApp {
      */
     updateLastUpdateTime() {
         const now = new Date();
-        document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('en-US', {
+        document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('vi-VN', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit'

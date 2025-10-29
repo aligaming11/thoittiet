@@ -26,7 +26,85 @@ const CONFIG = {
     STORAGE_KEYS: {
         LAST_LOCATION: 'weather_last_location',
         THEME: 'weather_theme',
-        FAVORITES: 'weather_favorites'
+        FAVORITES: 'weather_favorites',
+        ALERT_SOUND_ENABLED: 'weather_alert_sound_enabled'
+    },
+    
+    // Alert Sound Configuration - Multi-level Disaster Warning System
+    ALERT_SOUND: {
+        ENABLED: true, // Default: enabled
+        VOLUME: 0.6, // 0.0 to 1.0
+        
+        // Level 1: INFO - Thông tin (tiếng nhẹ, ngắn)
+        INFO_PATTERN: {
+            tones: [500],
+            duration: 0.15,
+            pause: 0.3,
+            repetitions: 1,
+            totalTime: 0.5,
+            waveType: 'sine'
+        },
+        
+        // Level 2: WARNING - Cảnh báo (tiếng vừa, lặp lại)
+        WARNING_PATTERN: {
+            tones: [600, 750],
+            duration: 0.2,
+            pause: 0.15,
+            repetitions: 2,
+            totalTime: 1.0,
+            waveType: 'sine'
+        },
+        
+        // Level 3: DANGER - Nguy hiểm (tiếng cao, nhanh, nhiều lớp)
+        DANGER_PATTERN: {
+            tones: [800, 1000, 1200],
+            duration: 0.25,
+            pause: 0.08,
+            repetitions: 3,
+            totalTime: 1.8,
+            waveType: 'square',
+            hasRumble: true
+        },
+        
+        // Level 4: EXTREME - Cực kỳ nguy hiểm (tiếng cực cao, liên tục, báo động)
+        EXTREME_PATTERN: {
+            tones: [1000, 1200, 1500, 1800],
+            duration: 0.2,
+            pause: 0.05,
+            repetitions: 4,
+            totalTime: 3.0,
+            waveType: 'square',
+            hasRumble: true,
+            hasSiren: true // Thêm hiệu ứng còi báo động
+        }
+    },
+    
+    // Disaster Level Definitions
+    DISASTER_LEVELS: {
+        INFO: {
+            level: 1,
+            label: 'Thông tin',
+            class: 'alert-info',
+            emoji: 'ℹ️'
+        },
+        WARNING: {
+            level: 2,
+            label: 'Cảnh báo',
+            class: 'alert-warning',
+            emoji: '⚠️'
+        },
+        DANGER: {
+            level: 3,
+            label: 'Nguy hiểm',
+            class: 'alert-danger',
+            emoji: '🚨'
+        },
+        EXTREME: {
+            level: 4,
+            label: 'Cực kỳ nguy hiểm',
+            class: 'alert-extreme',
+            emoji: '🔴'
+        }
     },
     
     // Air Quality Index Ranges (WeatherAPI.com US EPA standard)
@@ -78,6 +156,8 @@ const CONFIG = {
         'Moderate Rain': 'Mưa vừa',
         'Heavy rain': 'Mưa to',
         'Heavy Rain': 'Mưa to',
+        'Heavy Rain At Times': 'Mưa to từng lúc',
+        'Heavy rain at times': 'Mưa to từng lúc',
         'Light rain shower': 'Mưa rào nhẹ',
         'Moderate or heavy rain shower': 'Mưa rào vừa hoặc nặng',
         'Torrential rain shower': 'Mưa rào lớn',
